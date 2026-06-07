@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2: Master React Props</title>
+    
+    <!-- Load React and Babel via CDN just like yesterday -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 40px; }
+        h1 { text-align: center; color: #333; }
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; width: 250px; }
+        .avatar { font-size: 50px; margin-bottom: 12px; }
+        .role { color: #666; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .bio { color: #444; font-size: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // 1. THE REUSABLE COMPONENT WITH PROPS
+        // Instead of hardcoding text, this component accepts an object called "props"
+        function ProfileCard(props) {
+            return (
+                <div className="card">
+                    <div className="avatar">{props.emoji}</div>
+                    <h2>{props.name}</h2>
+                    <p className="role">{props.role}</p>
+                    <p className="bio">{props.bio}</p>
+                </div>
+            );
+        }
+
+        // 2. THE MAIN APP COMPONENT
+        // Here, we use the ProfileCard multiple times, passing different data to each one!
+        function App() {
+            return (
+                <div>
+                    <h1>My Guitar Band Lineup</h1>
+                    
+                    <div className="container">
+                        <ProfileCard 
+                            emoji="🎸" 
+                            name="Puja" 
+                            role="Lead Guitarist" 
+                            bio="Learning React day by day to build awesome music software."
+                        />
+                        
+                        <ProfileCard 
+                            emoji="🥁" 
+                            name="Alex" 
+                            role="Drummer" 
+                            bio="Keeps the absolute perfect rhythm and loves heavy metal beats."
+                        />
+                        
+                        <ProfileCard 
+                            emoji="🎤" 
+                            name="Sarah" 
+                            role="Vocalist" 
+                            bio="Can sing anything from classic rock melodies to modern pop tunes."
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        // Render the main App component into the root div
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
