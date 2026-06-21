@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 3: React State & Interactive Events</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 40px; }
+        h1 { text-align: center; color: #333; }
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center; width: 260px; transition: all 0.3s ease; }
+        .avatar { font-size: 50px; margin-bottom: 12px; }
+        .role { color: #666; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .stats { margin: 15px 0; font-size: 14px; font-weight: bold; color: #1e293b; background: #f8fafc; padding: 8px; border-radius: 6px; }
+        
+        /* Interactive Button Styles */
+        .btn-follow { background-color: #0070f3; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .btn-following { background-color: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function ProfileCard(props) {
+            // 1. CREATING STATE (The Component's Memory)
+            // isFollowing tells us true/false. setIsFollowing is the function used to change it.
+            const [isFollowing, setIsFollowing] = React.useState(false);
+            
+            // Calculate followers dynamically based on the state
+            const currentFollowers = isFollowing ? props.initialFollowers + 1 : props.initialFollowers;
+
+            // 2. THE EVENT HANDLER
+            // This function runs whenever the button is clicked
+            function handleFollowClick() {
+                setIsFollowing(!isFollowing); // Toggles true to false, or false to true
+            }
+
+            return (
+                <div className="card">
+                    <div className="avatar">{props.emoji}</div>
+                    <h2>{props.name}</h2>
+                    <p className="role">{props.role}</p>
+                    
+                    <div className="stats">
+                        👥 {currentFollowers} Followers
+                    </div>
+
+                    {/* 3. ATTACHING THE CLICK EVENT */}
+                    <button 
+                        className={`btn-follow ${isFollowing ? 'btn-following' : ''}`}
+                        onClick={handleFollowClick}
+                    >
+                        {isFollowing ? '✓ Following' : 'Follow'}
+                    </button>
+                </div>
+            );
+        }
+
+        function App() {
+            return (
+                <div>
+                    <h1>Interactive Musician Network</h1>
+                    <div className="container">
+                        <ProfileCard emoji="🎸" name="Puja" role="Lead Guitarist" initialFollowers={1050} />
+                        <ProfileCard emoji="🥁" name="Alex" role="Drummer" initialFollowers={420} />
+                        <ProfileCard emoji="🎤" name="Sarah" role="Vocalist" initialFollowers={2300} />
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
