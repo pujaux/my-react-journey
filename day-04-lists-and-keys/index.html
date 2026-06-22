@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 4: React Lists, Keys & Conditional Rendering</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        h1 { text-align: center; color: #38bdf8; }
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .card { background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155; text-align: center; width: 260px; }
+        .avatar { font-size: 50px; margin-bottom: 12px; }
+        
+        /* Conditional Badges */
+        .badge { display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; }
+        .badge-tour { background-color: #ef4444; color: white; }
+        .badge-active { background-color: #22c55e; color: white; }
+        
+        .role { color: #94a3b8; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function MusicianCard({ name, role, emoji, isOnTour }) {
+            return (
+                <div className="card">
+                    {/* 1. CONDITIONAL RENDERING (Ternary Operator) */}
+                    {isOnTour ? (
+                        <span className="badge badge-tour">✈️ On Tour</span>
+                    ) : (
+                        <span className="badge badge-badge-active">🏠 Active</span>
+                    )}
+
+                    <div className="avatar">{emoji}</div>
+                    <h2>{name}</h2>
+                    <p className="role">{role}</p>
+                </div>
+            );
+        }
+
+        function App() {
+            // 2. THE DATA ARRAY (Simulating data from a server database)
+            const musicians = [
+                { id: 101, name: "Puja", role: "Lead Guitarist", emoji: "🎸", isOnTour: true },
+                { id: 102, name: "Alex", role: "Drummer", emoji: "🥁", isOnTour: false },
+                { id: 103, name: "Sarah", role: "Vocalist", emoji: "🎤", isOnTour: true },
+                { id: 104, name: "David", role: "Keyboardist", emoji: "🎹", isOnTour: false }
+            ];
+
+            return (
+                <div>
+                    <h1>Dynamic Band Roster</h1>
+                    <div className="container">
+                        
+                        {/* 3. RENDERING A LIST USING .MAP() */}
+                        {musicians.map((musician) => (
+                            <MusicianCard 
+                                key={musician.id} // Essential Unique Key
+                                name={musician.name}
+                                role={musician.role}
+                                emoji={musician.emoji}
+                                isOnTour={musician.isOnTour}
+                            />
+                        ))}
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
