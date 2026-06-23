@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 5: Lifting State Up & Form Inputs</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        h1, h2 { text-align: center; color: #38bdf8; }
+        .wrapper { max-width: 800px; margin: 0 auto; }
+        
+        /* Form Styles */
+        .form-container { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #334155; display: flex; gap: 15px; justify-content: center; align-items: center; }
+        input, select { background: #0f172a; border: 1px solid #475569; padding: 10px; border-radius: 6px; color: white; font-size: 14px; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #7dd3fc; }
+
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .card { background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155; text-align: center; width: 220px; }
+        .avatar { font-size: 50px; margin-bottom: 12px; }
+        .role { color: #94a3b8; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // COMPONENT 1: THE INPUT FORM
+        function AddMusicianForm({ onAddMusician }) {
+            const [name, setName] = React.useState("");
+            const [role, setRole] = React.useState("");
+            const [emoji, setEmoji] = React.useState("🎸");
+
+            function handleSubmit(e) {
+                e.preventDefault(); // Stops the browser from reloading the page
+                if (!name || !role) return alert("Please fill out all fields!");
+
+                // Pass the typed data back UP to the parent
+                onAddMusician({ id: Date.now(), name, role, emoji });
+
+                // Clear the form fields
+                setName("");
+                setRole("");
+            }
+
+            return (
+                <form className="form-container" onSubmit={handleSubmit}>
+                    <input 
+                        type="text" 
+                        placeholder="Musician Name" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                    />
+                    <input 
+                        type="text" 
+                        placeholder="Role (e.g. Bassist)" 
+                        value={role} 
+                        onChange={(e) => setRole(e.target.value)} 
+                    />
+                    <select value={emoji} onChange={(e) => setEmoji(e.target.value)}>
+                        <option value="🎸">🎸 Guitar</option>
+                        <option value="🥁">🥁 Drums</option>
+                        <option value="🎤">🎤 Vocals</option>
+                        <option value="🎹">🎹 Keys</option>
+                        <option value="🎷">🎷 Sax</option>
+                    </select>
+                    <button type="submit">Add Member</button>
+                </form>
+            );
+        }
+
+        // COMPONENT 2: THE CARD DISPLAY
+        function MusicianCard({ name, role, emoji }) {
+            return (
+                <div className="card">
+                    <div className="avatar">{emoji}</div>
+                    <h2>{name}</h2>
+                    <p className="role">{role}</p>
+                </div>
+            );
+        }
+
+        // PARENT COMPONENT: THE STATE HOLDER
+        function App() {
+            // State is defined here because both components need access to it
+            const [musicians, setMusicians] = React.useState([
+                { id: 1, name: "Puja", role: "Lead Guitarist", emoji: "🎸" }
+            ]);
+
+            // Callback function to handle data received from the form child
+            function handleAddMusician(newMusician) {
+                // Always create a clean copy of the array when updating state
+                setMusicians([...musicians, newMusician]);
+            }
+
+            return (
+                <div className="wrapper">
+                    <h1>Band Roster Creator</h1>
+                    
+                    {/* Pass the callback function DOWN to the form */}
+                    <AddMusicianForm onAddMusician={handleAddMusician} />
+
+                    <h2>Active Roster</h2>
+                    <div className="container">
+                        {musicians.map((musician) => (
+                            <MusicianCard 
+                                key={musician.id} 
+                                name={musician.name} 
+                                role={musician.role} 
+                                emoji={musician.emoji} 
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
