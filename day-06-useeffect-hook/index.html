@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 6: The useEffect Hook & LocalStorage</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        h1, h2 { text-align: center; color: #38bdf8; }
+        .wrapper { max-width: 800px; margin: 0 auto; }
+        
+        .form-container { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #334155; display: flex; gap: 15px; justify-content: center; align-items: center; }
+        input { background: #0f172a; border: 1px solid #475569; padding: 10px; border-radius: 6px; color: white; font-size: 14px; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #7dd3fc; }
+        .btn-clear { background: #ef4444; color: white; margin: 20px auto; display: block; }
+        .btn-clear:hover { background: #f87171; }
+
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .card { background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155; text-align: center; width: 220px; position: relative; }
+        .avatar { font-size: 50px; margin-bottom: 12px; }
+        .role { color: #94a3b8; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function AddMusicianForm({ onAddMusician }) {
+            const [name, setName] = React.useState("");
+            const [role, setRole] = React.useState("");
+
+            function handleSubmit(e) {
+                e.preventDefault();
+                if (!name || !role) return alert("Please fill fields!");
+                onAddMusician({ id: Date.now(), name, role });
+                setName("");
+                setRole("");
+            }
+
+            return (
+                <form className="form-container" onSubmit={handleSubmit}>
+                    <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <input type="text" placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
+                    <button type="submit">Add Member</button>
+                </form>
+            );
+        }
+
+        function MusicianCard({ name, role }) {
+            return (
+                <div className="card">
+                    <div className="avatar">🎸</div>
+                    <h2>{name}</h2>
+                    <p className="role">{role}</p>
+                </div>
+            );
+        }
+
+        function App() {
+            // Initialize state by trying to read from localStorage first
+            const [musicians, setMusicians] = React.useState(() => {
+                const savedData = localStorage.getItem("myBandRoster");
+                return savedData ? JSON.parse(savedData) : [{ id: 1, name: "Initial Rocker", role: "Vocalist" }];
+            });
+
+            // EFFECT 1: Runs on EVERY single state change of [musicians]
+            // Purpose: Automatically back up our data array to localStorage
+            React.useEffect(() => {
+                localStorage.setItem("myBandRoster", JSON.stringify(musicians));
+                console.log("Effect Triggered: Saved roster to LocalStorage!");
+            }, [musicians]); // Dependency Array contains musicians
+
+            // EFFECT 2: Runs exactly ONCE when the app component loads (Mounts)
+            // Purpose: Say hello or setup listener configurations
+            React.useEffect(() => {
+                console.log("Welcome! App Component successfully Mounted to the screen.");
+            }, []); // Empty Dependency Array means run once on startup
+
+            function handleAddMusician(newMusician) {
+                setMusicians([...musicians, newMusician]);
+            }
+
+            function handleClear() {
+                setMusicians([]);
+            }
+
+            return (
+                <div className="wrapper">
+                    <h1>Persistent Band Roster (Day 6)</h1>
+                    <p style={{textAlign: 'center', color: '#94a3b8'}}>Check your browser console to watch useEffect execute side effects!</p>
+                    
+                    <AddMusicianForm onAddMusician={handleAddMusician} />
+
+                    <div className="container">
+                        {musicians.map((m) => (
+                            <MusicianCard key={m.id} name={m.name} role={m.role} />
+                        ))}
+                    </div>
+
+                    <button className="btn-clear" onClick={handleClear}>Clear Dashboard Storage</button>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
