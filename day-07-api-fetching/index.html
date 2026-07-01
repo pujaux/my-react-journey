@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 7: Fetching Live Data from an API</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #090d16; color: #f8fafc; margin: 0; padding: 40px; }
+        h1 { text-align: center; color: #a855f7; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 40px; }
+        
+        /* Loading Spinner & Errors */
+        .status-message { text-align: center; font-size: 18px; color: #a855f7; margin-top: 50px; font-weight: bold; }
+        .error-message { text-align: center; font-size: 18px; color: #ef4444; margin-top: 50px; }
+
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .card { background: #111827; padding: 24px; border-radius: 16px; border: 1px solid #1f2937; text-align: center; width: 240px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); border-color: #a855f7; }
+        
+        .avatar { width: 100px; height: 100px; background: #1f2937; border-radius: 50%; margin: 0 auto 15px auto; border: 2px solid #a855f7; }
+        h3 { margin: 10px 0 5px 0; color: #f1f5f9; }
+        .email { color: #94a3b8; font-size: 13px; margin-bottom: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function RobotCard({ name, username, email }) {
+            // Using a fun free avatar API that generates a unique robot based on their username string!
+            const avatarUrl = `https://robohash.org/${username}?set=set1&size=100x100`;
+
+            return (
+                <div className="card">
+                    <img src={avatarUrl} alt="robot profile" className="avatar" />
+                    <h3>{name}</h3>
+                    <p className="email">📧 {email}</p>
+                </div>
+            );
+        }
+
+        function App() {
+            // 1. STATE DEFINITIONS
+            const [users, setUsers] = React.useState([]);
+            const [isLoading, setIsLoading] = React.useState(true); // App starts out loading data
+            const [error, setError] = React.useState(null);
+
+            // 2. FETCH DATA INSIDE USEEFFECT
+            React.useEffect(() => {
+                // We use an empty dependency array [] so this network call fires EXACTLY once when the app boots up
+                fetch("https://jsonplaceholder.typicode.com/users")
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Network response failed to connect.");
+                        }
+                        return response.json(); // Convert raw text stream data into editable JavaScript objects
+                    })
+                    .then((data) => {
+                        setUsers(data);        // Store the live API users inside our state array
+                        setIsLoading(false);   // Turn off the loading message screen
+                    })
+                    .catch((err) => {
+                        setError(err.message); // Capture network errors securely
+                        setIsLoading(false);
+                    });
+            }, []);
+
+            // 3. CONDITIONAL STATUS RENDERING
+            if (isLoading) {
+                return <div className="status-message">📡 Initializing Core Network Connections... Loading...</div>;
+            }
+
+            if (error) {
+                return <div className="error-message">❌ Error Fetching API Data: {error}</div>;
+            }
+
+            return (
+                <div>
+                    <h1>Live Network Directory</h1>
+                    <p className="subtitle">Fetched synchronously from external API endpoint records</p>
+                    
+                    <div className="container">
+                        {users.map((user) => (
+                            <RobotCard 
+                                key={user.id} 
+                                name={user.name} 
+                                username={user.username} 
+                                email={user.email} 
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
