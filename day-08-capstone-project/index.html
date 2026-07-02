@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 8: React Capstone - Dev Task Board</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        .dashboard { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #38bdf8; margin-top: 0; }
+        
+        /* Form Inputs */
+        .task-form { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { flex: 1; background: #0f172a; border: 1px solid #475569; padding: 12px; border-radius: 8px; color: white; font-size: 14px; }
+        button.btn-add { background: #38bdf8; color: #0f172a; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        button.btn-add:hover { background: #7dd3fc; }
+
+        /* Task List Layout */
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 16px; border-radius: 10px; border: 1px solid #334155; transition: all 0.2s ease; }
+        
+        /* Dynamic Styles for Completed States */
+        .task-item.completed { border-color: #22c55e; background: #052e16; opacity: 0.8; }
+        .task-text { font-size: 16px; font-weight: 500; }
+        .task-text.strike { text-decoration: line-through; color: #94a3b8; }
+
+        /* Status Action Buttons */
+        .btn-status { border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-pending { background: #eab308; color: #451a03; }
+        .btn-done { background: #22c55e; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // COMPONENT 1: FORM INPUT CONTROLLER
+        function TaskInputForm({ onAddTask }) {
+            const [taskText, setTaskText] = React.useState("");
+
+            function handleFormSubmit(e) {
+                e.preventDefault();
+                if (!taskText.trim()) return alert("Task text cannot be left blank!");
+                
+                // Fire callback function to lift value to parent state
+                onAddTask(taskText);
+                setTaskText(""); // Clear controlled field snapshot
+            }
+
+            return (
+                <form className="task-form" onSubmit={handleFormSubmit}>
+                    <input 
+                        type="text" 
+                        placeholder="Add a new React milestone (e.g., Build a weather app)..." 
+                        value={taskText}
+                        onChange={(e) => setTaskText(e.target.value)}
+                    />
+                    <button type="submit" className="btn-add">Add Task</button>
+                </form>
+            );
+        }
+
+        // COMPONENT 2: DYNAMIC LIST ITEM
+        function TaskItem({ id, text, isCompleted, onToggleStatus }) {
+            return (
+                <div className={`task-item ${isCompleted ? 'completed' : ''}`}>
+                    <span className={`task-text ${isCompleted ? 'strike' : ''}`}>
+                        {text}
+                    </span>
+                    <button 
+                        className={`btn-status ${isCompleted ? 'btn-done' : 'btn-pending'}`}
+                        onClick={() => onToggleStatus(id)}
+                    >
+                        {isCompleted ? "✓ Completed" : "⏳ In Progress"}
+                    </button>
+                </div>
+            );
+        }
+
+        // MAIN APPLICATION: ARCHITECTURAL STATE OWNER
+        function App() {
+            // STATE: Initialized dynamically from local browser cache if exists
+            const [tasks, setTasks] = React.useState(() => {
+                const localCache = localStorage.getItem("devTaskTracker");
+                return localCache ? JSON.parse(localCache) : [
+                    { id: 1, text: "Master React Components and Props", isCompleted: true },
+                    { id: 2, text: "Learn Controlled Inputs and Lifting State", isCompleted: true },
+                    { id: 3, text: "Build Day 8 Capstone Project Dashboard", isCompleted: false }
+                ];
+            });
+
+            // SIDE EFFECT: Automatically syncs data array to localStorage on changes
+            React.useEffect(() => {
+                localStorage.setItem("devTaskTracker", JSON.stringify(tasks));
+            }, [tasks]);
+
+            // BUSINESS LOGIC: Add a clean new immutable entry copy
+            function handleAddTask(text) {
+                const newTask = { id: Date.now(), text, isCompleted: false };
+                setTasks([...tasks, newTask]);
+            }
+
+            // BUSINESS LOGIC: Locate specific index and safely switch boolean toggle flag
+            function handleToggleStatus(taskId) {
+                const updatedTasks = tasks.map((task) => {
+                    if (task.id === taskId) {
+                        return { ...task, isCompleted: !task.isCompleted };
+                    }
+                    return task;
+                });
+                setTasks(updatedTasks);
+            }
+
+            return (
+                <div className="dashboard">
+                    <h1>Dev Journey Milestone Tracker</h1>
+                    
+                    <TaskInputForm onAddTask={handleAddTask} />
+
+                    <div className="task-list">
+                        {tasks.map((task) => (
+                            <TaskItem 
+                                key={task.id}
+                                id={task.id}
+                                text={task.text}
+                                isCompleted={task.isCompleted}
+                                onToggleStatus={handleToggleStatus}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
