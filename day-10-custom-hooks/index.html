@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 10: Custom Hooks</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        .notepad-container { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; }
+        h1 { text-align: center; color: #38bdf8; margin-top: 0; }
+        p { color: #94a3b8; text-align: center; font-size: 14px; margin-bottom: 20px; }
+        
+        textarea { width: 100%; height: 200px; background: #0f172a; border: 1px solid #475569; padding: 15px; border-radius: 8px; color: white; font-size: 16px; resize: none; box-sizing: border-box; font-family: inherit; }
+        textarea:focus { outline: 2px solid #38bdf8; border-color: transparent; }
+        
+        .status-footer { display: flex; justify-content: space-between; margin-top: 15px; font-size: 12px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // 1. THE CUSTOM HOOK (A reusable machine)
+        // Rule: Custom hooks MUST start with the word "use"
+        function useLocalStorage(key, initialValue) {
+            // Get state value from local storage or fallback to initial value
+            const [storedValue, setStoredValue] = React.useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.log(error);
+                    return initialValue;
+                }
+            });
+
+            // Sync state changes to local storage using useEffect
+            React.useEffect(() => {
+                window.localStorage.setItem(key, JSON.stringify(storedValue));
+            }, [key, storedValue]);
+
+            // Return exactly what standard useState returns: [value, setter function]
+            return [storedValue, setStoredValue];
+        }
+
+        // 2. THE MAIN COMPONENT
+        function App() {
+            // Using our brand-new custom hook! 
+            // It completely hides the complex localStorage logic inside it.
+            const [note, setNote] = useLocalStorage("devNotesKey", "Type your thoughts, code snippets, or notes here...");
+
+            // Derived state to count characters automatically
+            const charCount = note.length;
+
+            return (
+                <div className="notepad-container">
+                    <h1>Persistent Scratchpad</h1>
+                    <p>Close this tab or refresh the page—your notes will stay safely preserved right here!</p>
+                    
+                    <textarea 
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                    />
+
+                    <div className="status-footer">
+                        <span>💾 Autosaving to LocalStorage...</span>
+                        <span>{charCount} Characters</span>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
