@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 11: The useRef Hook</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+        .timer-card { max-width: 450px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
+        h1 { color: #38bdf8; margin-top: 0; }
+        
+        .time-display { font-size: 48px; font-weight: bold; font-family: monospace; color: #f1f5f9; margin: 20px 0; }
+        
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 25px; }
+        button { border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-start { background: #22c55e; color: white; }
+        .btn-start:hover { background: #16a34a; }
+        .btn-stop { background: #ef4444; color: white; }
+        .btn-stop:hover { background: #dc2626; }
+        
+        /* Note Input */
+        .input-group { margin-top: 20px; text-align: left; }
+        label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; background: #0f172a; border: 1px solid #475569; padding: 12px; border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box; }
+        input:focus { outline: 2px solid #38bdf8; border-color: transparent; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        function App() {
+            // This state controls the visible clock (updates on screen)
+            const [seconds, setSeconds] = React.useState(0);
+            const [isRunning, setIsRunning] = React.useState(false);
+
+            // 1. REF FOR A DOM ELEMENT
+            // We initialize it as null. We'll attach it to our input box.
+            const inputRef = React.useRef(null);
+
+            // 2. REF FOR A MUTABLE VALUE
+            // This stores the setInterval ID so we can clear it later.
+            // If we stored this in a useState, updating it would cause annoying extra renders!
+            const timerIdRef = React.useRef(null);
+
+            function handleStart() {
+                if (isRunning) return;
+
+                setIsRunning(true);
+
+                // Start the interval and save the ID inside our ref container (.current)
+                timerIdRef.current = setInterval(() => {
+                    setSeconds((prev) => prev + 1);
+                }, 1000);
+
+                // DIRECT DOM MANIPULATION: Auto-focus the input element instantly!
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }
+
+            function handleStop() {
+                setIsRunning(false);
+                
+                // Retrieve the interval ID from our ref to stop the timer
+                clearInterval(timerIdRef.current);
+                timerIdRef.current = null;
+            }
+
+            function handleReset() {
+                handleStop();
+                setSeconds(0);
+            }
+
+            return (
+                <div className="timer-card">
+                    <h1>Code Session Tracker</h1>
+                    <p style={{color: '#94a3b8', fontSize: '14px'}}>Click Start to begin timing and auto-focus your note pad.</p>
+                    
+                    <div className="time-display">
+                        {Math.floor(seconds / 60)}m {seconds % 60}s
+                    </div>
+
+                    <div className="btn-group">
+                        <button className="btn-start" onClick={handleStart}>Start</button>
+                        <button className="btn-stop" onClick={handleStop}>Stop</button>
+                        <button style={{background: '#475569', color: 'white'}} onClick={handleReset}>Reset</button>
+                    </div>
+
+                    <div className="input-group">
+                        <label htmlFor="notes">SESSION NOTES (Auto-focuses on Start)</label>
+                        {/* 3. ATTACHING THE REF TO THE DOM ELEMENT */}
+                        <input 
+                            ref={inputRef} 
+                            id="notes" 
+                            type="text" 
+                            placeholder="What React concepts are you practicing right now?..." 
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
