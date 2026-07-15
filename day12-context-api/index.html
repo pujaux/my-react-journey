@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 12: The Context API (useContext)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+        
+        /* Theme Styles */
+        .theme-light { background-color: #f8fafc; color: #0f172a; }
+        .theme-dark { background-color: #0f172a; color: #f8fafc; }
+
+        .app-container { min-height: 100vh; padding: 40px; box-sizing: border-box; }
+        
+        /* Layout Components */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; border-radius: 12px; margin-bottom: 30px; }
+        .navbar-light { background: #e2e8f0; border: 1px solid #cbd5e1; }
+        .navbar-dark { background: #1e293b; border: 1px solid #334155; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .card { padding: 25px; border-radius: 12px; text-align: center; }
+        .card-light { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .card-dark { background: #1e293b; border: 1px solid #334155; }
+
+        button { border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-light { background: #0f172a; color: #f8fafc; }
+        .btn-dark { background: #38bdf8; color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // 1. CREATE THE CONTEXT (The radio tower)
+        const ThemeContext = React.createContext();
+
+        // A deeply nested card component (does not receive any props!)
+        function StatCard({ title, value }) {
+            // 3. CONSUME THE CONTEXT (Tuning into the radio tower)
+            const { theme } = React.useContext(ThemeContext);
+
+            return (
+                <div className={`card card-${theme}`}>
+                    <h3>{title}</h3>
+                    <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{value}</p>
+                </div>
+            );
+        }
+
+        // Mid-level Layout component (purely structural, does not use or pass theme props)
+        function MainContent() {
+            return (
+                <div className="dashboard-grid">
+                    <StatCard title="React Hours" value="48 hrs" />
+                    <StatCard title="Concepts Mastered" value="12/12" />
+                    <StatCard title="GitHub Commits" value="34" />
+                </div>
+            );
+        }
+
+        // Header Navigation component (reaches directly into Context for state and setter)
+        function Navbar() {
+            const { theme, setTheme } = React.useContext(ThemeContext);
+
+            return (
+                <div className={`navbar navbar-${theme}`}>
+                    <h2>Dev Dashboard</h2>
+                    <button 
+                        className={`btn-${theme}`}
+                        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                    >
+                        Switch to {theme === "light" ? "🌙 Dark" : "☀️ Light"} Mode
+                    </button>
+                </div>
+            );
+        }
+
+        // THE ARCHITECTURAL PARENT
+        function App() {
+            const [theme, setTheme] = React.useState("dark");
+
+            return (
+                // 2. PROVIDE THE CONTEXT (Broadcasting the state values to all children)
+                <ThemeContext.Provider value={{ theme, setTheme }}>
+                    <div className={`app-container theme-${theme}`}>
+                        <Navbar />
+                        <MainContent />
+                    </div>
+                </ThemeContext.Provider>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
